@@ -321,6 +321,9 @@ var nextBtnWrap = document.getElementById('nextBtnWrap');
 var nextBtn = document.getElementById('nextBtn');
 
 function showError(msg) {
+  // Игнорируем посторонний шум от расширений браузера (кошельки и т.п.),
+  // которые лезут в каждую страницу и не имеют отношения к игре.
+  if (/ethereum|metamask|solana|web3|coinbase/i.test(msg)) return;
   errorBanner.textContent = 'Что-то пошло не так: ' + msg;
   errorBanner.classList.remove('hidden');
 }
