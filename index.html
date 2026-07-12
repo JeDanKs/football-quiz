@@ -308,7 +308,52 @@ var STAR_PLAYERS = [
   { title: "Alphonso Davies", name: "Альфонсо Дэвис" },
   { title: "Florian Wirtz", name: "Флориан Вирц" },
   { title: "Xavi Simons", name: "Хави Симонс" },
-  { title: "Moisés Caicedo", name: "Мойзес Кайседо" }
+  { title: "Moisés Caicedo", name: "Мойзес Кайседо" },
+
+  { title: "Lamine Yamal", name: "Ламин Ямаль" },
+  { title: "Michael Olise", name: "Майкл Олисе" },
+  { title: "Désiré Doué", name: "Дезире Дуэ" },
+  { title: "Mikel Merino", name: "Микель Мерино" },
+  { title: "Warren Zaïre-Emery", name: "Уоррен Заир-Эмери" },
+  { title: "Endrick", name: "Эндрик" },
+  { title: "João Neves", name: "Жоау Невеш" },
+  { title: "Arda Güler", name: "Арда Гюлер" },
+  { title: "Kobbie Mainoo", name: "Кобби Майну" },
+  { title: "Pau Cubarsí", name: "Пау Кубарси" },
+  { title: "Rico Lewis", name: "Рико Льюис" },
+  { title: "Gavi", name: "Гави" },
+  { title: "Nico Williams", name: "Нико Уильямс" },
+  { title: "Alejandro Garnacho", name: "Алехандро Гарначо" }
+];
+
+/* ============================================================
+   ЛЕГЕНДЫ ФУТБОЛА — те, кого сейчас на поле уже не увидишь,
+   но кого нельзя не знать. Формат такой же, как у STAR_PLAYERS.
+   Каждую игру гарантированно попадает 5 легенд.
+   ============================================================ */
+var LEGENDS = [
+  { title: "David Beckham", name: "Дэвид Бекхэм" },
+  { title: "Zinedine Zidane", name: "Зинедин Зидан" },
+  { title: "Thierry Henry", name: "Тьерри Анри" },
+  { title: "Pelé", name: "Пеле" },
+  { title: "Alfredo Di Stéfano", name: "Альфредо Ди Стефано" },
+  { title: "Diego Maradona", name: "Диего Марадона" },
+  { title: "Ronaldinho", name: "Роналдиньо" },
+  { title: "Ronaldo (Brazilian footballer)", name: "Роналдо Назарио" },
+  { title: "Franz Beckenbauer", name: "Франц Беккенбауэр" },
+  { title: "Johan Cruyff", name: "Йохан Кройф" },
+  { title: "Michel Platini", name: "Мишель Платини" },
+  { title: "Paolo Maldini", name: "Паоло Мальдини" },
+  { title: "Roberto Baggio", name: "Роберто Баджо" },
+  { title: "George Best", name: "Джордж Бест" },
+  { title: "Eusébio", name: "Эйсебио" },
+  { title: "Franco Baresi", name: "Франко Барези" },
+  { title: "Andrea Pirlo", name: "Андреа Пирло" },
+  { title: "Xavi", name: "Хави Эрнандес" },
+  { title: "Iker Casillas", name: "Икер Касильяс" },
+  { title: "Gianluigi Buffon", name: "Джанлуиджи Буффон" },
+  { title: "Didier Drogba", name: "Дидье Дрогба" },
+  { title: "Samuel Eto'o", name: "Самюэль Это'о" }
 ];
 
 /* ============================================================
@@ -356,6 +401,7 @@ var TEAM_PLAYERS = [
 var TOTAL_QUESTIONS = 15;
 var ROUND_SECONDS = 10;
 var MAX_TEAM_PER_GAME = 3;
+var LEGENDS_PER_GAME = 5;
 
 var pool = [];          // все игроки с готовым фото: {name, img}
 var questions = [];     // подготовленные вопросы на эту игру
@@ -430,17 +476,23 @@ function fetchPhoto(title) {
 }
 
 function buildPool() {
-  var promises = STAR_PLAYERS.map(function (p) {
+  var starPromises = STAR_PLAYERS.map(function (p) {
     return fetchPhoto(p.title).then(function (img) {
-      return img ? { name: p.name, img: img, isTeam: false } : null;
+      return img ? { name: p.name, img: img, isTeam: false, isLegend: false } : null;
     });
   });
-  return Promise.all(promises).then(function (results) {
-    var stars = results.filter(function (x) { return x; });
-    var team = TEAM_PLAYERS.map(function (p) {
-      return { name: p.name, img: p.img, isTeam: true };
+  var legendPromises = LEGENDS.map(function (p) {
+    return fetchPhoto(p.title).then(function (img) {
+      return img ? { name: p.name, img: img, isTeam: false, isLegend: true } : null;
     });
-    return { stars: stars, team: team };
+  });
+  return Promise.all(starPromises.concat(legendPromises)).then(function (results) {
+    var stars = results.slice(0, starPromises.length).filter(function (x) { return x; });
+    var legends = results.slice(starPromises.length).filter(function (x) { return x; });
+    var team = TEAM_PLAYERS.map(function (p) {
+      return { name: p.name, img: p.img, isTeam: true, isLegend: false };
+    });
+    return { stars: stars, legends: legends, team: team };
   });
 }
 
@@ -451,6 +503,34 @@ function shuffle(arr) {
     var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
   }
   return a;
+}
+
+// Честная ротация: кто реже попадался в игре — у того больше шансов
+// выпасть сейчас. Храним счётчики показов в localStorage, поэтому
+// одни и те же лица не будут выпадать чаще других на длинной дистанции.
+function loadShowCounts() {
+  try {
+    return JSON.parse(localStorage.getItem('quizShowCounts') || '{}');
+  } catch (e) {
+    return {};
+  }
+}
+function saveShowCounts(counts) {
+  try {
+    localStorage.setItem('quizShowCounts', JSON.stringify(counts));
+  } catch (e) { /* localStorage недоступен — просто не сохраняем */ }
+}
+function pickFair(list, n, counts) {
+  var withCounts = list.map(function (item) {
+    return { item: item, cnt: counts[item.name] || 0, rnd: Math.random() };
+  });
+  withCounts.sort(function (a, b) {
+    if (a.cnt !== b.cnt) return a.cnt - b.cnt;
+    return a.rnd - b.rnd;
+  });
+  var picked = withCounts.slice(0, n).map(function (x) { return x.item; });
+  picked.forEach(function (p) { counts[p.name] = (counts[p.name] || 0) + 1; });
+  return shuffle(picked);
 }
 
 function startGame() {
@@ -464,6 +544,7 @@ function startGame() {
 
   buildPool().then(function (res) {
     var stars = res.stars;
+    var legends = res.legends;
     var team = includeTeam ? res.team : [];
 
     if (stars.length < 4) {
@@ -475,17 +556,23 @@ function startGame() {
       return;
     }
 
-    pool = stars.concat(team);
+    pool = stars.concat(legends).concat(team);
 
-    // Собираем вопросы: команда — редкие "вставки", звёзды — основа
-    var teamShuffled = shuffle(team);
-    var starsShuffled = shuffle(stars);
+    // Собираем вопросы: 5 легенд + 3 своих (если включено) + добор звёздами.
+    // Кто реже попадался — у того больше шансов выпасть сейчас (см. pickFair).
+    var counts = loadShowCounts();
     var correctAnswers = [];
 
-    var teamSlots = Math.min(teamShuffled.length, MAX_TEAM_PER_GAME);
-    for (var i = 0; i < teamSlots; i++) correctAnswers.push(teamShuffled[i]);
+    var legendSlots = Math.min(legends.length, LEGENDS_PER_GAME);
+    correctAnswers = correctAnswers.concat(pickFair(legends, legendSlots, counts));
+
+    var teamSlots = Math.min(team.length, MAX_TEAM_PER_GAME);
+    correctAnswers = correctAnswers.concat(pickFair(team, teamSlots, counts));
+
     var starsNeeded = TOTAL_QUESTIONS - correctAnswers.length;
-    for (var k = 0; k < starsNeeded && k < starsShuffled.length; k++) correctAnswers.push(starsShuffled[k]);
+    correctAnswers = correctAnswers.concat(pickFair(stars, Math.min(starsNeeded, stars.length), counts));
+
+    saveShowCounts(counts);
 
     questions = shuffle(correctAnswers).map(function (correct) {
       var distractorsSource = shuffle(pool.filter(function (p) { return p.name !== correct.name; })).slice(0, 3);
