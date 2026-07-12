@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Угадай футболиста!</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
   :root {
     --green: #2e7d32;
@@ -47,6 +48,26 @@
   }
   button.big:hover { transform: scale(1.03); }
   button.big:disabled { opacity: 0.6; cursor: default; }
+
+  .options {
+    margin: 16px 0 4px;
+    text-align: left;
+  }
+  .opt-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: #f1f8f1;
+    border: 2px solid #cfe8cf;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #1b3a1b;
+  }
+  .opt-row input { width: 18px; height: 18px; flex-shrink: 0; }
+  .opt-row small { display: block; font-weight: 400; color: #555; font-size: 12px; }
 
   #hud {
     display: flex;
@@ -144,7 +165,17 @@
   <!-- START SCREEN -->
   <div id="startScreen">
     <h1>⚽ Угадай футболиста!</h1>
-    <p class="sub">Фото — 4 варианта имени — 10 секунд на ответ. Поехали!</p>
+    <p class="sub">Фото — 4 варианта имени. Поехали!</p>
+    <div class="options">
+      <label class="opt-row">
+        <input type="checkbox" id="toggleTeam">
+        <span>+STARS <small>(добавить своих ребят из команды)</small></span>
+      </label>
+      <label class="opt-row">
+        <input type="checkbox" id="toggleTimer">
+        <span>Без таймера <small>(без ограничения по времени на ответ)</small></span>
+      </label>
+    </div>
     <button class="big" id="startBtn">Начать игру</button>
   </div>
 
@@ -285,17 +316,46 @@ var STAR_PLAYERS = [
    1) Положи фото (jpg/png) в ту же папку, что и этот html-файл
       (или в подпапку, например "photos").
    2) Впиши сюда имя и имя файла, например:
-      { name: "Ваня Иванов", img: "photos/vanya.jpg" },
+      { name: "Ваня Иванов", img: "vanya.jpg" },
    Эти ребята будут иногда появляться среди вопросов вперемешку
    со звёздами — угадать, что это "не Месси, а Ваня" ;)
    ============================================================ */
 var TEAM_PLAYERS = [
-  // { name: "Ваня Иванов", img: "photos/vanya.jpg" },
-  // { name: "Петя Сидоров", img: "photos/petya.jpg" }
+  { name: "Александр Георгиевич", img: "Aleksandr Trener.jpg" },
+  { name: "Пинчук Кирилл", img: "Kiril Pi.jpg" },
+  { name: "Кристиан Беляков", img: "Kristian.jpg" },
+  { name: "Мигель Ренатович", img: "Migel R.jpg" },
+  { name: "Мирон Лебедев", img: "Miron Lebedev.jpg" },
+  { name: "Платон Зырянов", img: "Platon Z.jpg" },
+  { name: "Святослав Гуськов", img: "Svyatoslav Gus.jpg" },
+  { name: "Павел Дмитриевич", img: "Pavel.jpg" },
+  { name: "Егор Сергеевич", img: "Egor Sergeevich.jpg" },
+  { name: "Александр Пахомов", img: "Aleksandr Pahomov.jpg" },
+  { name: "Александр Митрюхин", img: "Alexsandr M.jpg" },
+  { name: "Андрей Шевченко", img: "Andrei Shev.jpg" },
+  { name: "Данила Крыгин", img: "Danila K.jpg" },
+  { name: "Егор Венгеровский", img: "Egor V.jpg" },
+  { name: "Фёдор Акимов", img: "Fedya A.jpg" },
+  { name: "Иван Ленёв", img: "Ivan L.jpg" },
+  { name: "Кирилл Ананьев", img: "Kiril A.jpg" },
+  { name: "Леонид Дегтярев", img: "Lenya D.jpg" },
+  { name: "Леонид Водовозов", img: "Lenya V.jpg" },
+  { name: "Лев Сусоев", img: "Lev S.jpg" },
+  { name: "Максим Николаевич", img: "Maksim.jpg" },
+  { name: "Матвей Барабаш", img: "Matvei B.jpg" },
+  { name: "Матвей Красноперов", img: "Matvei Kr.jpg" },
+  { name: "Мирослав Хегай", img: "Miroslav H.jpg" },
+  { name: "Тимур Ряхмятуллин", img: "Timur R.jpg" },
+  { name: "Владимир Сахончик", img: "Vova S.jpg" },
+  { name: "Валерий Юрьевич Петраков", img: "Valerii Petrakov.jpg" },
+  { name: "Владимир Покровский", img: "Vova Pokr.jpg" },
+  { name: "Юрий Валерьевич", img: "Yurii.jpg" },
+  { name: "Мирон Пижанков", img: "Miron Pizh.jpg" }
 ];
 
 var TOTAL_QUESTIONS = 15;
 var ROUND_SECONDS = 10;
+var MAX_TEAM_PER_GAME = 3;
 
 var pool = [];          // все игроки с готовым фото: {name, img}
 var questions = [];     // подготовленные вопросы на эту игру
@@ -306,6 +366,7 @@ var advanceTimeout = null;
 var timeLeft = ROUND_SECONDS;
 var answered = false;
 var gameHistory = [];   // для итогового экрана
+var timerEnabled = true; // выставляется перед стартом по чекбоксу "Без таймера"
 
 var startScreen = document.getElementById('startScreen');
 var loadingScreen = document.getElementById('loading');
@@ -313,12 +374,23 @@ var gameScreen = document.getElementById('gameScreen');
 var resultsScreen = document.getElementById('resultsScreen');
 var photoWrap = document.getElementById('photoWrap');
 var answersEl = document.getElementById('answers');
+var timerBar = document.getElementById('timerBar');
 var timerFill = document.getElementById('timerFill');
 var questionCounter = document.getElementById('questionCounter');
 var scoreDisplay = document.getElementById('scoreDisplay');
 var errorBanner = document.getElementById('errorBanner');
 var nextBtnWrap = document.getElementById('nextBtnWrap');
 var nextBtn = document.getElementById('nextBtn');
+var toggleTeam = document.getElementById('toggleTeam');
+var toggleTimer = document.getElementById('toggleTimer');
+
+// Если страница открыта внутри Telegram (как Mini App) — разворачиваем
+// её на весь экран. Вне Telegram window.Telegram просто не существует,
+// и этот блок ничего не делает.
+if (window.Telegram && window.Telegram.WebApp) {
+  window.Telegram.WebApp.ready();
+  window.Telegram.WebApp.expand();
+}
 
 function showError(msg) {
   // Игнорируем посторонний шум от расширений браузера (кошельки и т.п.),
@@ -382,6 +454,9 @@ function shuffle(arr) {
 }
 
 function startGame() {
+  var includeTeam = toggleTeam.checked;
+  timerEnabled = !toggleTimer.checked;
+
   startScreen.classList.add('hidden');
   resultsScreen.classList.add('hidden');
   loadingScreen.classList.remove('hidden');
@@ -389,7 +464,7 @@ function startGame() {
 
   buildPool().then(function (res) {
     var stars = res.stars;
-    var team = res.team;
+    var team = includeTeam ? res.team : [];
 
     if (stars.length < 4) {
       loadingScreen.innerHTML =
@@ -407,7 +482,7 @@ function startGame() {
     var starsShuffled = shuffle(stars);
     var correctAnswers = [];
 
-    var teamSlots = Math.min(teamShuffled.length, Math.floor(TOTAL_QUESTIONS / 3));
+    var teamSlots = Math.min(teamShuffled.length, MAX_TEAM_PER_GAME);
     for (var i = 0; i < teamSlots; i++) correctAnswers.push(teamShuffled[i]);
     var starsNeeded = TOTAL_QUESTIONS - correctAnswers.length;
     for (var k = 0; k < starsNeeded && k < starsShuffled.length; k++) correctAnswers.push(starsShuffled[k]);
@@ -460,6 +535,12 @@ function showQuestion() {
     btn.addEventListener('click', function () { selectAnswer(btn, opt, q); });
     answersEl.appendChild(btn);
   });
+
+  if (!timerEnabled) {
+    timerBar.classList.add('hidden');
+    return;
+  }
+  timerBar.classList.remove('hidden');
 
   timerInterval = setInterval(function () {
     timeLeft -= 0.1;
