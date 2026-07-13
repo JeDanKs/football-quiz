@@ -327,7 +327,7 @@ var STAR_PLAYERS = [
   { title: "Rico Lewis", name: "Рико Льюис" },
   { title: "Gavi", name: "Гави" },
   { title: "Nico Williams", name: "Нико Уильямс" },
-  { title: "Alejandro Garnacho", name: "Алехандро Гарначо" }
+  { title: "Alejandro Garnacho", name: "Алехандро Гарначо", pos: "50% 15%" }
 ];
 
 /* ============================================================
@@ -341,7 +341,7 @@ var LEGENDS = [
   { title: "Thierry Henry", name: "Тьерри Анри" },
   { title: "Pelé", name: "Пеле" },
   { title: "Alfredo Di Stéfano", name: "Альфредо Ди Стефано" },
-  { title: "Diego Maradona", name: "Диего Марадона" },
+  { title: "Diego Maradona", name: "Диего Марадона", pos: "50% 15%" },
   { title: "Ronaldinho", name: "Роналдиньо" },
   { title: "Ronaldo (Brazilian footballer)", name: "Роналдо Назарио" },
   { title: "Franz Beckenbauer", name: "Франц Беккенбауэр" },
@@ -386,12 +386,12 @@ var TEAM_PLAYERS = [
   { name: "Павел Дмитриевич", img: "Pavel.jpg" },
   { name: "Егор Сергеевич", img: "Egor Sergeevich.jpg" },
   { name: "Александр Пахомов", img: "Aleksandr Pahomov.jpg" },
-  { name: "Александр Митрюхин", img: "Alexsandr M.jpg" },
+  { name: "Александр Митрюхин", img: "Alexsandr M.jpg", pos: "50% 15%" },
   { name: "Андрей Шевченко", img: "Andrei Shev.jpg" },
-  { name: "Данила Крыгин", img: "Danila K.jpg" },
+  { name: "Данила Крыгин", img: "Danila K.jpg", pos: "50% 15%" },
   { name: "Егор Венгеровский", img: "Egor V.jpg" },
   { name: "Фёдор Акимов", img: "Fedya A.jpg" },
-  { name: "Иван Ленёв", img: "Ivan L.jpg" },
+  { name: "Иван Ленёв", img: "Ivan L.jpg", pos: "50% 15%" },
   { name: "Кирилл Ананьев", img: "Kiril A.jpg" },
   { name: "Леонид Дегтярев", img: "Lenya D.jpg" },
   { name: "Леонид Водовозов", img: "Lenya V.jpg" },
@@ -401,11 +401,11 @@ var TEAM_PLAYERS = [
   { name: "Матвей Красноперов", img: "Matvei Kr.jpg", pos: "50% 35%" },
   { name: "Мирослав Хегай", img: "Miroslav H.jpg" },
   { name: "Тимур Ряхмятуллин", img: "Timur R.jpg" },
-  { name: "Владимир Сахончик", img: "Vova S.jpg" },
+  { name: "Владимир Сахончик", img: "Vova S.jpg", pos: "50% 15%" },
   { name: "Валерий Юрьевич Петраков", img: "Valerii Petrakov.jpg" },
   { name: "Владимир Покровский", img: "Vova Pokr.jpg" },
   { name: "Юрий Валерьевич", img: "Yurii.jpg" },
-  { name: "Мирон Пижанков", img: "Miron Pizh.jpg" }
+  { name: "Мирон Пижанков", img: "Miron Pizh.jpg", pos: "50% 15%" }
 ];
 
 var TOTAL_QUESTIONS = 20;
@@ -489,12 +489,12 @@ function fetchPhoto(title) {
 function buildPool() {
   var starPromises = STAR_PLAYERS.map(function (p) {
     return fetchPhoto(p.title).then(function (img) {
-      return img ? { name: p.name, img: img, isTeam: false, isLegend: false } : null;
+      return img ? { name: p.name, img: img, isTeam: false, isLegend: false, pos: p.pos || '50% 50%' } : null;
     });
   });
   var legendPromises = LEGENDS.map(function (p) {
     return fetchPhoto(p.title).then(function (img) {
-      return img ? { name: p.name, img: img, isTeam: false, isLegend: true } : null;
+      return img ? { name: p.name, img: img, isTeam: false, isLegend: true, pos: p.pos || '50% 50%' } : null;
     });
   });
   return Promise.all(starPromises.concat(legendPromises)).then(function (results) {
