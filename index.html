@@ -102,7 +102,7 @@
     justify-content: center;
     margin: 0 auto 18px;
   }
-  #photoWrap img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+  #photoWrap img { width: 100%; height: 100%; object-fit: cover; }
   .placeholder-icon { font-size: 64px; }
 
   #answers {
@@ -172,6 +172,10 @@
         <span>+STARS <small>(добавить своих ребят из команды)</small></span>
       </label>
       <label class="opt-row">
+        <input type="checkbox" id="toggleLegends" checked>
+        <span>+ЛЕГЕНДЫ <small>(добавить легенд футбола прошлого)</small></span>
+      </label>
+      <label class="opt-row">
         <input type="checkbox" id="toggleTimer">
         <span>Без таймера <small>(без ограничения по времени на ответ)</small></span>
       </label>
@@ -188,7 +192,7 @@
   <!-- GAME SCREEN -->
   <div id="gameScreen" class="hidden">
     <div id="hud">
-      <span id="questionCounter">Вопрос 1/15</span>
+      <span id="questionCounter">Вопрос 1/20</span>
       <span id="scoreDisplay">Очки: 0</span>
     </div>
     <div id="timerBar"><div id="timerFill"></div></div>
@@ -359,9 +363,15 @@ var LEGENDS = [
 /* ============================================================
    РЕБЯТА ИЗ КОМАНДЫ СЫНА — добавь сюда своих ради прикола!
    1) Положи фото (jpg/png) в ту же папку, что и этот html-файл
-      (или в подпапку, например "photos").
+      (или в подпавку, например "photos").
    2) Впиши сюда имя и имя файла, например:
       { name: "Ваня Иванов", img: "vanya.jpg" },
+   3) Если фото обрезается неудачно (например, голова уходит за
+      край рамки), добавь необязательное поле pos — это CSS
+      object-position. По умолчанию "50% 50%" (центр).
+      Примеры: "50% 0%" — прижать к верху, "50% 100%" — к низу,
+      "20% 50%" — сдвинуть влево.
+      { name: "Ваня Иванов", img: "vanya.jpg", pos: "50% 10%" },
    Эти ребята будут иногда появляться среди вопросов вперемешку
    со звёздами — угадать, что это "не Месси, а Ваня" ;)
    ============================================================ */
@@ -388,7 +398,7 @@ var TEAM_PLAYERS = [
   { name: "Лев Сусоев", img: "Lev S.jpg" },
   { name: "Максим Николаевич", img: "Maksim.jpg" },
   { name: "Матвей Барабаш", img: "Matvei B.jpg" },
-  { name: "Матвей Красноперов", img: "Matvei Kr.jpg" },
+  { name: "Матвей Красноперов", img: "Matvei Kr.jpg", pos: "50% 35%" },
   { name: "Мирослав Хегай", img: "Miroslav H.jpg" },
   { name: "Тимур Ряхмятуллин", img: "Timur R.jpg" },
   { name: "Владимир Сахончик", img: "Vova S.jpg" },
@@ -398,9 +408,9 @@ var TEAM_PLAYERS = [
   { name: "Мирон Пижанков", img: "Miron Pizh.jpg" }
 ];
 
-var TOTAL_QUESTIONS = 15;
+var TOTAL_QUESTIONS = 20;
 var ROUND_SECONDS = 10;
-var MAX_TEAM_PER_GAME = 3;
+var MAX_TEAM_PER_GAME = 4;
 var LEGENDS_PER_GAME = 5;
 
 var pool = [];          // все игроки с готовым фото: {name, img}
@@ -428,6 +438,7 @@ var errorBanner = document.getElementById('errorBanner');
 var nextBtnWrap = document.getElementById('nextBtnWrap');
 var nextBtn = document.getElementById('nextBtn');
 var toggleTeam = document.getElementById('toggleTeam');
+var toggleLegends = document.getElementById('toggleLegends');
 var toggleTimer = document.getElementById('toggleTimer');
 
 // Если страница открыта внутри Telegram (как Mini App) — разворачиваем
@@ -490,7 +501,7 @@ function buildPool() {
     var stars = results.slice(0, starPromises.length).filter(function (x) { return x; });
     var legends = results.slice(starPromises.length).filter(function (x) { return x; });
     var team = TEAM_PLAYERS.map(function (p) {
-      return { name: p.name, img: p.img, isTeam: true, isLegend: false };
+      return { name: p.name, img: p.img, isTeam: true, isLegend: false, pos: p.pos || '50% 50%' };
     });
     return { stars: stars, legends: legends, team: team };
   });
@@ -535,6 +546,7 @@ function pickFair(list, n, counts) {
 
 function startGame() {
   var includeTeam = toggleTeam.checked;
+  var includeLegends = toggleLegends.checked;
   timerEnabled = !toggleTimer.checked;
 
   startScreen.classList.add('hidden');
@@ -544,7 +556,7 @@ function startGame() {
 
   buildPool().then(function (res) {
     var stars = res.stars;
-    var legends = res.legends;
+    var legends = includeLegends ? res.legends : [];
     var team = includeTeam ? res.team : [];
 
     if (stars.length < 4) {
@@ -558,7 +570,7 @@ function startGame() {
 
     pool = stars.concat(legends).concat(team);
 
-    // Собираем вопросы: 5 легенд + 3 своих (если включено) + добор звёздами.
+    // Собираем вопросы: 5 легенд + 4 своих (если включено) + добор звёздами.
     // Кто реже попадался — у того больше шансов выпасть сейчас (см. pickFair).
     var counts = loadShowCounts();
     var correctAnswers = [];
@@ -611,6 +623,7 @@ function showQuestion() {
   photoWrap.innerHTML = '';
   var img = document.createElement('img');
   img.src = q.correct.img;
+  img.style.objectPosition = q.correct.pos || '50% 50%';
   img.onerror = function () { photoWrap.innerHTML = '<div class="placeholder-icon">⚽</div>'; };
   photoWrap.appendChild(img);
 
@@ -692,8 +705,7 @@ function showResults() {
   var table = document.getElementById('resultsTable');
   table.innerHTML = gameHistory.map(function (h) {
     return '<tr><td>' + (h.correct ? '✅' : '❌') + '</td><td class="' +
-      (h.isTeam ? 'tag-team' : '') + '">' + h.name +
-      (h.isTeam ? ' (своя команда)' : '') + '</td></tr>';
+      (h.isTeam ? 'tag-team' : '') + '">' + h.name + '</td></tr>';
   }).join('');
 }
 </script>
