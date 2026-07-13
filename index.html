@@ -487,14 +487,18 @@ function fetchPhoto(title) {
 }
 
 function buildPool() {
+  // У звёзд и легенд фото — это, как правило, портретные "инфобокс"-снимки
+  // с Wikipedia, где лицо ближе к верху кадра, поэтому по умолчанию
+  // смещаем обрезку к верху. У своих ребят (TEAM_PLAYERS) фото другие
+  // (кадры с матчей), поэтому у них по умолчанию центр — см. ниже.
   var starPromises = STAR_PLAYERS.map(function (p) {
     return fetchPhoto(p.title).then(function (img) {
-      return img ? { name: p.name, img: img, isTeam: false, isLegend: false, pos: p.pos || '50% 50%' } : null;
+      return img ? { name: p.name, img: img, isTeam: false, isLegend: false, pos: p.pos || '50% 20%' } : null;
     });
   });
   var legendPromises = LEGENDS.map(function (p) {
     return fetchPhoto(p.title).then(function (img) {
-      return img ? { name: p.name, img: img, isTeam: false, isLegend: true, pos: p.pos || '50% 50%' } : null;
+      return img ? { name: p.name, img: img, isTeam: false, isLegend: true, pos: p.pos || '50% 20%' } : null;
     });
   });
   return Promise.all(starPromises.concat(legendPromises)).then(function (results) {
