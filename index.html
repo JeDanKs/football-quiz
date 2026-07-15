@@ -176,6 +176,10 @@
         <span>+ЛЕГЕНДЫ <small>(добавить легенд футбола прошлого)</small></span>
       </label>
       <label class="opt-row">
+        <input type="checkbox" id="toggleWC26" checked>
+        <span>+ЧМ26 <small>(сборные-полуфиналисты: Франция, Испания, Аргентина, Англия)</small></span>
+      </label>
+      <label class="opt-row">
         <input type="checkbox" id="toggleTimer">
         <span>Без таймера <small>(без ограничения по времени на ответ)</small></span>
       </label>
@@ -224,9 +228,7 @@
    запуска игры, поэтому ничего вручную загружать не нужно.
    ============================================================ */
 var STAR_PLAYERS = [
-  { title: "Lionel Messi", name: "Лионель Месси" },
   { title: "Cristiano Ronaldo", name: "Криштиану Роналду" },
-  { title: "Kylian Mbappé", name: "Килиан Мбаппе" },
   { title: "Erling Haaland", name: "Эрлинг Холанд" },
   { title: "Neymar", name: "Неймар" },
   { title: "Mohamed Salah", name: "Мохамед Салах" },
@@ -235,10 +237,7 @@ var STAR_PLAYERS = [
   { title: "Luka Modrić", name: "Лука Модрич" },
   { title: "Karim Benzema", name: "Карим Бензема" },
   { title: "Vinícius Júnior", name: "Винисиус Жуниор" },
-  { title: "Harry Kane", name: "Гарри Кейн" },
   { title: "Antoine Griezmann", name: "Антуан Гризманн" },
-  { title: "Jude Bellingham", name: "Джуд Беллингем" },
-  { title: "Pedri", name: "Педри" },
   { title: "Virgil van Dijk", name: "Вирджил ван Дейк" },
   { title: "Thibaut Courtois", name: "Тибо Куртуа" },
   { title: "Marc-André ter Stegen", name: "Марк-Андре тер Штеген" },
@@ -246,14 +245,11 @@ var STAR_PLAYERS = [
   { title: "Toni Kroos", name: "Тони Кроос" },
   { title: "Sergio Ramos", name: "Серхио Рамос" },
   { title: "Phil Foden", name: "Фил Фоден" },
-  { title: "Bukayo Saka", name: "Букайо Сака" },
-  { title: "Rodri", name: "Родри" },
   { title: "Jamal Musiala", name: "Джамаль Мусиала" },
   { title: "Achraf Hakimi", name: "Ашраф Хакими" },
   { title: "Sadio Mané", name: "Садио Мане" },
   { title: "Casemiro", name: "Каземиро" },
   { title: "Frenkie de Jong", name: "Френки де Йонг" },
-  { title: "Declan Rice", name: "Деклан Райс" },
   { title: "Zlatan Ibrahimović", name: "Златан Ибрагимович" },
   { title: "Andrés Iniesta", name: "Андрес Иньеста" },
 
@@ -262,7 +258,6 @@ var STAR_PLAYERS = [
   { title: "Nicolò Barella", name: "Николо Барелла" },
   { title: "Federico Valverde", name: "Федерико Вальверде" },
   { title: "Eduardo Camavinga", name: "Эдуардо Камавинга" },
-  { title: "Aurélien Tchouaméni", name: "Орельен Тчуамени" },
   { title: "Joshua Kimmich", name: "Йошуа Киммих" },
   { title: "Ilkay Gündoğan", name: "Илкай Гюндоган" },
   { title: "Leroy Sané", name: "Леруа Сане" },
@@ -276,30 +271,20 @@ var STAR_PLAYERS = [
   { title: "Trent Alexander-Arnold", name: "Трент Александер-Арнольд" },
   { title: "Andrew Robertson (footballer)", name: "Эндрю Робертсон" },
   { title: "Kieran Trippier", name: "Киран Триппьер" },
-  { title: "Reece James", name: "Рис Джеймс" },
   { title: "Cole Palmer", name: "Коул Палмер" },
   { title: "Christopher Nkunku", name: "Кристофер Нкунку" },
-  { title: "Ousmane Dembélé", name: "Усман Дембеле" },
-  { title: "Marcus Rashford", name: "Маркус Рэшфорд" },
   { title: "Jack Grealish", name: "Джек Грилиш" },
   { title: "James Maddison", name: "Джеймс Мэддисон" },
   { title: "Marco Verratti", name: "Марко Верратти" },
   { title: "Jorginho", name: "Жоржиньо" },
-  { title: "N'Golo Kanté", name: "Нголо Канте" },
   { title: "Ángel Di María", name: "Анхель Ди Мария" },
   { title: "Paulo Dybala", name: "Паулу Дибала" },
-  { title: "Lautaro Martínez", name: "Лаутаро Мартинес" },
-  { title: "Julián Álvarez", name: "Хулиан Альварес" },
-  { title: "Enzo Fernández", name: "Энцо Фернандес" },
   { title: "Rodrygo", name: "Родригу" },
   { title: "Gabriel Jesus", name: "Габриэл Жезус" },
   { title: "Gabriel Martinelli", name: "Габриэл Мартинелли" },
-  { title: "Ivan Toney", name: "Айван Тони" },
   { title: "Victor Osimhen", name: "Виктор Осимхен" },
   { title: "Khvicha Kvaratskhelia", name: "Хвича Кварацхелия" },
   { title: "Rafael Leão", name: "Рафаэл Леан" },
-  { title: "Theo Hernández", name: "Тео Эрнандес" },
-  { title: "Mike Maignan", name: "Майк Меньян" },
   { title: "Gianluigi Donnarumma", name: "Джанлуиджи Доннарумма" },
   { title: "Federico Chiesa", name: "Федерико Кьеза" },
   { title: "Sandro Tonali", name: "Сандро Тонали" },
@@ -314,19 +299,10 @@ var STAR_PLAYERS = [
   { title: "Xavi Simons", name: "Хави Симонс" },
   { title: "Moisés Caicedo", name: "Мойзес Кайседо" },
 
-  { title: "Lamine Yamal", name: "Ламин Ямаль" },
-  { title: "Michael Olise", name: "Майкл Олисе" },
-  { title: "Désiré Doué", name: "Дезире Дуэ" },
-  { title: "Mikel Merino", name: "Микель Мерино" },
-  { title: "Warren Zaïre-Emery", name: "Уоррен Заир-Эмери" },
   { title: "Endrick", name: "Эндрик" },
   { title: "João Neves", name: "Жоау Невеш" },
   { title: "Arda Güler", name: "Арда Гюлер" },
-  { title: "Kobbie Mainoo", name: "Кобби Майну" },
-  { title: "Pau Cubarsí", name: "Пау Кубарси" },
   { title: "Rico Lewis", name: "Рико Льюис" },
-  { title: "Gavi", name: "Гави" },
-  { title: "Nico Williams", name: "Нико Уильямс" },
   { title: "Alejandro Garnacho", name: "Алехандро Гарначо", pos: "50% 15%" }
 ];
 
@@ -359,6 +335,137 @@ var LEGENDS = [
   { title: "Didier Drogba", name: "Дидье Дрогба" },
   { title: "Samuel Eto'o", name: "Самюэль Это'о" }
 ];
+
+/* ============================================================
+   ЧМ-2026 — СБОРНЫЕ-ПОЛУФИНАЛИСТЫ (Франция, Испания, Аргентина,
+   Англия). Составы актуальны на стадию плей-офф ЧМ-2026 (июль 2026).
+   Формат тот же, что у STAR_PLAYERS/LEGENDS, плюс поле team —
+   код сборной (используется для флажка в итоговой таблице).
+   Игроков, которые уже были в STAR_PLAYERS/LEGENDS (Месси, Мбаппе,
+   Кейн и т.д.), сюда перенесли целиком — они больше не встречаются
+   в общем списке звёзд, только здесь.
+   Гарантированно 5 игроков ЧМ-2026 за игру (см. WC26_PER_GAME).
+   ============================================================ */
+var WC26_SEMIFINALISTS = [
+  // --- Франция ---
+  { title: "Mike Maignan", name: "Майк Меньян", team: "france" },
+  { title: "Brice Samba", name: "Брис Самба", team: "france" },
+  { title: "Robin Risser", name: "Робен Риссер", team: "france" },
+  { title: "Dayot Upamecano", name: "Дайо Упамекано", team: "france" },
+  { title: "William Saliba", name: "Уильям Салиба", team: "france" },
+  { title: "Lucas Digne", name: "Люка Диню", team: "france" },
+  { title: "Theo Hernández", name: "Тео Эрнандес", team: "france" },
+  { title: "Lucas Hernández", name: "Люка Эрнандес", team: "france" },
+  { title: "Ibrahima Konaté", name: "Ибраима Конате", team: "france" },
+  { title: "Jules Koundé", name: "Жюль Кунде", team: "france" },
+  { title: "Malo Gusto", name: "Мало Гюсто", team: "france" },
+  { title: "Maxence Lacroix", name: "Максанс Лакруа", team: "france" },
+  { title: "N'Golo Kanté", name: "Нголо Канте", team: "france" },
+  { title: "Adrien Rabiot", name: "Адриен Рабьо", team: "france" },
+  { title: "Manu Koné", name: "Ману Коне", team: "france" },
+  { title: "Aurélien Tchouaméni", name: "Орельен Тчуамени", team: "france" },
+  { title: "Warren Zaïre-Emery", name: "Уоррен Заир-Эмери", team: "france" },
+  { title: "Maghnes Akliouche", name: "Манес Аклиуш", team: "france" },
+  { title: "Kylian Mbappé", name: "Килиан Мбаппе", team: "france" },
+  { title: "Ousmane Dembélé", name: "Усман Дембеле", team: "france" },
+  { title: "Michael Olise", name: "Майкл Олисе", team: "france" },
+  { title: "Désiré Doué", name: "Дезире Дуэ", team: "france" },
+  { title: "Bradley Barcola", name: "Брэдли Баркола", team: "france" },
+  { title: "Rayan Cherki", name: "Раян Шерки", team: "france" },
+  { title: "Marcus Thuram", name: "Маркус Тюрам", team: "france" },
+  { title: "Jean-Philippe Mateta", name: "Жан-Филипп Матета", team: "france" },
+
+  // --- Испания ---
+  { title: "Unai Simón", name: "Унаи Симон", team: "spain" },
+  { title: "David Raya", name: "Давид Райя", team: "spain" },
+  { title: "Joan García (footballer)", name: "Жоан Гарсия", team: "spain" },
+  { title: "Marc Cucurella", name: "Марк Кукурелья", team: "spain" },
+  { title: "Alejandro Grimaldo", name: "Алехандро Гримальдо", team: "spain" },
+  { title: "Pau Cubarsí", name: "Пау Кубарси", team: "spain" },
+  { title: "Aymeric Laporte", name: "Эмерик Лапорт", team: "spain" },
+  { title: "Marc Pubill", name: "Марк Пубиль", team: "spain" },
+  { title: "Éric García", name: "Эрик Гарсия", team: "spain" },
+  { title: "Marcos Llorente", name: "Маркос Льоренте", team: "spain" },
+  { title: "Pedro Porro", name: "Педро Порро", team: "spain" },
+  { title: "Pedri", name: "Педри", team: "spain" },
+  { title: "Fabián Ruiz", name: "Фабиан Руис", team: "spain" },
+  { title: "Martín Zubimendi", name: "Мартин Субименди", team: "spain" },
+  { title: "Gavi", name: "Гави", team: "spain" },
+  { title: "Rodri", name: "Родри", team: "spain" },
+  { title: "Álex Baena", name: "Алекс Баэна", team: "spain" },
+  { title: "Mikel Merino", name: "Микель Мерино", team: "spain" },
+  { title: "Mikel Oyarzabal", name: "Микель Ойярсабаль", team: "spain" },
+  { title: "Dani Olmo", name: "Дани Ольмо", team: "spain" },
+  { title: "Nico Williams", name: "Нико Уильямс", team: "spain" },
+  { title: "Yeremy Pino", name: "Йереми Пино", team: "spain" },
+  { title: "Ferran Torres", name: "Ферран Торрес", team: "spain" },
+  { title: "Borja Iglesias", name: "Борха Иглесиас", team: "spain" },
+  { title: "Víctor Muñoz (footballer)", name: "Виктор Муньос", team: "spain" },
+  { title: "Lamine Yamal", name: "Ламин Ямаль", team: "spain" },
+
+  // --- Аргентина ---
+  { title: "Emiliano Martínez (footballer)", name: "Эмилиано Мартинес", team: "argentina" },
+  { title: "Gerónimo Rulli", name: "Херонимо Рульи", team: "argentina" },
+  { title: "Juan Musso", name: "Хуан Муссо", team: "argentina" },
+  { title: "Nicolás Otamendi", name: "Николас Отаменди", team: "argentina" },
+  { title: "Nicolás Tagliafico", name: "Николас Тальяфико", team: "argentina" },
+  { title: "Nahuel Molina", name: "Науэль Молина", team: "argentina" },
+  { title: "Cristian Romero (footballer)", name: "Кристиан Ромеро", team: "argentina" },
+  { title: "Gonzalo Montiel", name: "Гонсало Монтьель", team: "argentina" },
+  { title: "Lisandro Martínez", name: "Лисандро Мартинес", team: "argentina" },
+  { title: "Leonardo Balerdi", name: "Леонардо Балерди", team: "argentina" },
+  { title: "Facundo Medina", name: "Факундо Медина", team: "argentina" },
+  { title: "Rodrigo De Paul", name: "Родриго Де Пауль", team: "argentina" },
+  { title: "Leandro Paredes", name: "Леандро Паредес", team: "argentina" },
+  { title: "Giovani Lo Celso", name: "Джованни Ло Чельсо", team: "argentina" },
+  { title: "Alexis Mac Allister", name: "Алексис Мак Аллистер", team: "argentina" },
+  { title: "Enzo Fernández", name: "Энцо Фернандес", team: "argentina" },
+  { title: "Exequiel Palacios", name: "Эксекьель Паласиос", team: "argentina" },
+  { title: "Valentín Barco", name: "Валентин Барко", team: "argentina" },
+  { title: "Lionel Messi", name: "Лионель Месси", team: "argentina", pos: "50% 15%" },
+  { title: "Lautaro Martínez", name: "Лаутаро Мартинес", team: "argentina" },
+  { title: "Julián Álvarez", name: "Хулиан Альварес", team: "argentina" },
+  { title: "Nicolás González (footballer)", name: "Николас Гонсалес", team: "argentina" },
+  { title: "Thiago Almada", name: "Тьяго Альмада", team: "argentina" },
+  { title: "Giuliano Simeone", name: "Джулиано Симеоне", team: "argentina" },
+  { title: "Nico Paz", name: "Нико Пас", team: "argentina" },
+  { title: "José Manuel López (footballer)", name: "Хосе Мануэль Лопес", team: "argentina" },
+
+  // --- Англия ---
+  { title: "Jordan Pickford", name: "Джордан Пикфорд", team: "england" },
+  { title: "Dean Henderson", name: "Дин Хендерсон", team: "england" },
+  { title: "James Trafford", name: "Джеймс Траффорд", team: "england" },
+  { title: "Dan Burn", name: "Дэн Бёрн", team: "england" },
+  { title: "Trevoh Chalobah", name: "Тревор Чалоба", team: "england" },
+  { title: "Marc Guéhi", name: "Марк Геи", team: "england" },
+  { title: "Reece James", name: "Рис Джеймс", team: "england" },
+  { title: "Ezri Konsa", name: "Эзри Конса", team: "england" },
+  { title: "Nico O'Reilly", name: "Нико О'Райли", team: "england" },
+  { title: "Jarell Quansah", name: "Джарелл Куанса", team: "england" },
+  { title: "Djed Spence", name: "Джед Спенс", team: "england" },
+  { title: "John Stones", name: "Джон Стоунз", team: "england" },
+  { title: "Elliot Anderson", name: "Эллиот Андерсон", team: "england" },
+  { title: "Jude Bellingham", name: "Джуд Беллингем", team: "england" },
+  { title: "Eberechi Eze", name: "Эберечи Эзе", team: "england" },
+  { title: "Jordan Henderson", name: "Джордан Хендерсон", team: "england" },
+  { title: "Kobbie Mainoo", name: "Кобби Майну", team: "england" },
+  { title: "Declan Rice", name: "Деклан Райс", team: "england" },
+  { title: "Morgan Rogers", name: "Морган Роджерс", team: "england" },
+  { title: "Anthony Gordon", name: "Энтони Гордон", team: "england" },
+  { title: "Harry Kane", name: "Гарри Кейн", team: "england" },
+  { title: "Noni Madueke", name: "Нони Мадуэке", team: "england" },
+  { title: "Marcus Rashford", name: "Маркус Рэшфорд", team: "england" },
+  { title: "Bukayo Saka", name: "Букайо Сака", team: "england" },
+  { title: "Ivan Toney", name: "Айван Тони", team: "england" },
+  { title: "Ollie Watkins", name: "Олли Уоткинс", team: "england" }
+];
+
+var WC26_FLAGS = {
+  france: "🇫🇷",
+  spain: "🇪🇸",
+  argentina: "🇦🇷",
+  england: "🏴󠁧󠁢󠁥󠁮󠁧󠁿"
+};
 
 /* ============================================================
    РЕБЯТА ИЗ КОМАНДЫ СЫНА — добавь сюда своих ради прикола!
@@ -412,6 +519,7 @@ var TOTAL_QUESTIONS = 20;
 var ROUND_SECONDS = 10;
 var MAX_TEAM_PER_GAME = 4;
 var LEGENDS_PER_GAME = 5;
+var WC26_PER_GAME = 5;
 
 var pool = [];          // все игроки с готовым фото: {name, img}
 var questions = [];     // подготовленные вопросы на эту игру
@@ -439,6 +547,7 @@ var nextBtnWrap = document.getElementById('nextBtnWrap');
 var nextBtn = document.getElementById('nextBtn');
 var toggleTeam = document.getElementById('toggleTeam');
 var toggleLegends = document.getElementById('toggleLegends');
+var toggleWC26 = document.getElementById('toggleWC26');
 var toggleTimer = document.getElementById('toggleTimer');
 
 // Если страница открыта внутри Telegram (как Mini App) — разворачиваем
@@ -493,21 +602,29 @@ function buildPool() {
   // (кадры с матчей), поэтому у них по умолчанию центр — см. ниже.
   var starPromises = STAR_PLAYERS.map(function (p) {
     return fetchPhoto(p.title).then(function (img) {
-      return img ? { name: p.name, img: img, isTeam: false, isLegend: false, pos: p.pos || '50% 20%' } : null;
+      return img ? { name: p.name, img: img, isTeam: false, isLegend: false, isWC26: false, pos: p.pos || '50% 20%' } : null;
     });
   });
   var legendPromises = LEGENDS.map(function (p) {
     return fetchPhoto(p.title).then(function (img) {
-      return img ? { name: p.name, img: img, isTeam: false, isLegend: true, pos: p.pos || '50% 20%' } : null;
+      return img ? { name: p.name, img: img, isTeam: false, isLegend: true, isWC26: false, pos: p.pos || '50% 20%' } : null;
     });
   });
-  return Promise.all(starPromises.concat(legendPromises)).then(function (results) {
-    var stars = results.slice(0, starPromises.length).filter(function (x) { return x; });
-    var legends = results.slice(starPromises.length).filter(function (x) { return x; });
-    var team = TEAM_PLAYERS.map(function (p) {
-      return { name: p.name, img: p.img, isTeam: true, isLegend: false, pos: p.pos || '50% 50%' };
+  // Игроки сборных-полуфиналистов ЧМ-2026 — фото тоже с Wikipedia,
+  // как у звёзд и легенд, плюс поле team для флажка в результатах.
+  var wc26Promises = WC26_SEMIFINALISTS.map(function (p) {
+    return fetchPhoto(p.title).then(function (img) {
+      return img ? { name: p.name, img: img, isTeam: false, isLegend: false, isWC26: true, team: p.team, pos: p.pos || '50% 20%' } : null;
     });
-    return { stars: stars, legends: legends, team: team };
+  });
+  return Promise.all(starPromises.concat(legendPromises).concat(wc26Promises)).then(function (results) {
+    var stars = results.slice(0, starPromises.length).filter(function (x) { return x; });
+    var legends = results.slice(starPromises.length, starPromises.length + legendPromises.length).filter(function (x) { return x; });
+    var wc26 = results.slice(starPromises.length + legendPromises.length).filter(function (x) { return x; });
+    var team = TEAM_PLAYERS.map(function (p) {
+      return { name: p.name, img: p.img, isTeam: true, isLegend: false, isWC26: false, pos: p.pos || '50% 50%' };
+    });
+    return { stars: stars, legends: legends, wc26: wc26, team: team };
   });
 }
 
@@ -551,6 +668,7 @@ function pickFair(list, n, counts) {
 function startGame() {
   var includeTeam = toggleTeam.checked;
   var includeLegends = toggleLegends.checked;
+  var includeWC26 = toggleWC26.checked;
   timerEnabled = !toggleTimer.checked;
 
   startScreen.classList.add('hidden');
@@ -561,6 +679,7 @@ function startGame() {
   buildPool().then(function (res) {
     var stars = res.stars;
     var legends = includeLegends ? res.legends : [];
+    var wc26 = includeWC26 ? res.wc26 : [];
     var team = includeTeam ? res.team : [];
 
     if (stars.length < 4) {
@@ -572,15 +691,19 @@ function startGame() {
       return;
     }
 
-    pool = stars.concat(legends).concat(team);
+    pool = stars.concat(legends).concat(wc26).concat(team);
 
-    // Собираем вопросы: 5 легенд + 4 своих (если включено) + добор звёздами.
-    // Кто реже попадался — у того больше шансов выпасть сейчас (см. pickFair).
+    // Собираем вопросы: 5 легенд + 5 игроков ЧМ26 + 4 своих (если включено)
+    // + добор звёздами. Кто реже попадался — у того больше шансов выпасть
+    // сейчас (см. pickFair).
     var counts = loadShowCounts();
     var correctAnswers = [];
 
     var legendSlots = Math.min(legends.length, LEGENDS_PER_GAME);
     correctAnswers = correctAnswers.concat(pickFair(legends, legendSlots, counts));
+
+    var wc26Slots = Math.min(wc26.length, WC26_PER_GAME);
+    correctAnswers = correctAnswers.concat(pickFair(wc26, wc26Slots, counts));
 
     var teamSlots = Math.min(team.length, MAX_TEAM_PER_GAME);
     correctAnswers = correctAnswers.concat(pickFair(team, teamSlots, counts));
@@ -680,6 +803,8 @@ function lockRound(chosen, q, btnEl) {
   gameHistory.push({
     name: q.correct.name,
     isTeam: q.correct.isTeam,
+    isWC26: q.correct.isWC26,
+    team: q.correct.team,
     correct: correctIsChosen
   });
 
@@ -708,8 +833,9 @@ function showResults() {
 
   var table = document.getElementById('resultsTable');
   table.innerHTML = gameHistory.map(function (h) {
+    var flag = (h.isWC26 && h.team && WC26_FLAGS[h.team]) ? WC26_FLAGS[h.team] + ' ' : '';
     return '<tr><td>' + (h.correct ? '✅' : '❌') + '</td><td class="' +
-      (h.isTeam ? 'tag-team' : '') + '">' + h.name + '</td></tr>';
+      (h.isTeam ? 'tag-team' : '') + '">' + flag + h.name + '</td></tr>';
   }).join('');
 }
 </script>
