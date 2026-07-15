@@ -568,6 +568,7 @@ var timeLeft = ROUND_SECONDS;
 var answered = false;
 var gameHistory = [];   // для итогового экрана
 var timerEnabled = true; // выставляется перед стартом по чекбоксу "Без таймера"
+var lastTickSecond = null; // последняя озвученная секунда обратного отсчёта
 
 var startScreen = document.getElementById('startScreen');
 var loadingScreen = document.getElementById('loading');
@@ -586,6 +587,66 @@ var toggleTeam = document.getElementById('toggleTeam');
 var toggleLegends = document.getElementById('toggleLegends');
 var toggleWC26 = document.getElementById('toggleWC26');
 var toggleTimer = document.getElementById('toggleTimer');
+
+/* ============================================================
+   ЗВУК — синтезируем прямо в браузере через Web Audio API,
+   без внешних файлов. "Дзынь" на правильный ответ, "бум" на
+   неправильный, тиканье на последних 3 секундах таймера.
+   ============================================================ */
+var audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) {
+    var AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    audioCtx = new AC();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playTone(ctx, startTime, freq, duration, type, peakGain) {
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, startTime);
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(peakGain, startTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(startTime);
+  osc.stop(startTime + duration + 0.02);
+}
+
+function playCorrectSound() {
+  var ctx = getAudioCtx();
+  if (!ctx) return;
+  var now = ctx.currentTime;
+  // короткий "дзынь" — два восходящих колокольчатых тона
+  playTone(ctx, now, 1046.5, 0.28, 'sine', 0.3);       // C6
+  playTone(ctx, now + 0.07, 1568, 0.32, 'sine', 0.28); // G6
+}
+
+function playWrongSound() {
+  var ctx = getAudioCtx();
+  if (!ctx) return;
+  var now = ctx.currentTime;
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(160, now);
+  osc.frequency.exponentialRampToValueAtTime(45, now + 0.28);
+  gain.gain.setValueAtTime(0.35, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.32);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.34);
+}
+
+function playTickSound() {
+  var ctx = getAudioCtx();
+  if (!ctx) return;
+  playTone(ctx, ctx.currentTime, 1000, 0.07, 'square', 0.22);
+}
 
 // Если страница открыта внутри Telegram (как Mini App) — разворачиваем
 // её на весь экран. Вне Telegram window.Telegram просто не существует,
@@ -703,6 +764,7 @@ function pickFair(list, n, counts) {
 }
 
 function startGame() {
+  getAudioCtx(); // разблокируем звук по жесту пользователя (клик по кнопке)
   var includeTeam = toggleTeam.checked;
   var includeLegends = toggleLegends.checked;
   var includeWC26 = toggleWC26.checked;
@@ -779,6 +841,7 @@ function showQuestion() {
   timeLeft = ROUND_SECONDS;
   timerFill.style.width = '100%';
   timerFill.style.background = '#ffd54f';
+  lastTickSecond = null;
 
   var q = questions[currentIndex];
   questionCounter.textContent = 'Вопрос ' + (currentIndex + 1) + '/' + TOTAL_QUESTIONS;
@@ -811,6 +874,11 @@ function showQuestion() {
     var pct = Math.max(0, (timeLeft / ROUND_SECONDS) * 100);
     timerFill.style.width = pct + '%';
     if (pct < 25) timerFill.style.background = '#e53935';
+    var secLeft = Math.ceil(timeLeft);
+    if (secLeft <= 3 && secLeft >= 1 && secLeft !== lastTickSecond) {
+      lastTickSecond = secLeft;
+      playTickSound();
+    }
     if (timeLeft <= 0) {
       clearInterval(timerInterval);
       lockRound(null, q);
@@ -868,6 +936,7 @@ function lockRound(chosen, q, btnEl) {
   });
 
   if (correctIsChosen && correctBtn) spawnConfetti(correctBtn);
+  if (correctIsChosen) playCorrectSound(); else playWrongSound();
 
   gameHistory.push({
     name: q.correct.name,
