@@ -121,9 +121,46 @@
     cursor: pointer;
   }
   .ans-btn:hover { background: #e2f3e2; }
-  .ans-btn.correct { background: #a5d6a7; border-color: #66bb6a; }
-  .ans-btn.wrong { background: #ef9a9a; border-color: var(--red); }
+  .ans-btn.correct {
+    background: #a5d6a7;
+    border-color: #66bb6a;
+    animation: correctPulse 0.55s ease;
+  }
+  .ans-btn.wrong {
+    background: #ef9a9a;
+    border-color: var(--red);
+    animation: wrongShake 0.5s ease;
+  }
   .ans-btn:disabled { cursor: default; }
+
+  @keyframes correctPulse {
+    0%   { transform: scale(1); box-shadow: 0 0 0 0 rgba(102,187,106,0.5); }
+    35%  { transform: scale(1.14); box-shadow: 0 0 0 10px rgba(102,187,106,0.25); }
+    65%  { transform: scale(0.96); box-shadow: 0 0 0 4px rgba(102,187,106,0.12); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(102,187,106,0); }
+  }
+  @keyframes wrongShake {
+    10%, 90% { transform: translateX(-1px); }
+    20%, 80% { transform: translateX(3px); }
+    30%, 50%, 70% { transform: translateX(-6px); }
+    40%, 60% { transform: translateX(6px); }
+  }
+
+  .confetti-piece {
+    position: fixed;
+    top: 0;
+    left: 0;
+    font-size: 20px;
+    line-height: 1;
+    pointer-events: none;
+    z-index: 9999;
+    will-change: transform, opacity;
+    animation: confettiFly 0.9s ease-out forwards;
+  }
+  @keyframes confettiFly {
+    0%   { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) scale(0.4) rotate(var(--rot)); opacity: 0; }
+  }
 
   #loading { color: var(--green-dark); font-weight: 600; padding: 20px 0; }
   .spinner {
@@ -786,6 +823,31 @@ function selectAnswer(btn, opt, q) {
   lockRound(opt, q, btn);
 }
 
+function spawnConfetti(originEl) {
+  var rect = originEl.getBoundingClientRect();
+  var cx = rect.left + rect.width / 2;
+  var cy = rect.top + rect.height / 2;
+  var pieces = ['⭐', '✨', '🎉', '🟢'];
+  for (var i = 0; i < 16; i++) {
+    var el = document.createElement('span');
+    el.className = 'confetti-piece';
+    el.textContent = pieces[Math.floor(Math.random() * pieces.length)];
+    var angle = Math.random() * Math.PI * 2;
+    var dist = 60 + Math.random() * 90;
+    var dx = Math.cos(angle) * dist;
+    var dy = Math.sin(angle) * dist - 40;
+    el.style.left = cx + 'px';
+    el.style.top = cy + 'px';
+    el.style.setProperty('--dx', dx + 'px');
+    el.style.setProperty('--dy', dy + 'px');
+    el.style.setProperty('--rot', (Math.random() * 360 - 180) + 'deg');
+    document.body.appendChild(el);
+    (function (node) {
+      setTimeout(function () { node.remove(); }, 950);
+    })(el);
+  }
+}
+
 function lockRound(chosen, q, btnEl) {
   if (answered) return;
   answered = true;
@@ -794,11 +856,18 @@ function lockRound(chosen, q, btnEl) {
   var correctIsChosen = chosen && chosen.name === q.correct.name;
   if (correctIsChosen) score++;
 
+  var correctBtn = null;
   Array.prototype.forEach.call(answersEl.children, function (b) {
     b.disabled = true;
-    if (b.textContent === q.correct.name) b.classList.add('correct');
-    else if (b === btnEl) b.classList.add('wrong');
+    if (b.textContent === q.correct.name) {
+      b.classList.add('correct');
+      correctBtn = b;
+    } else if (b === btnEl) {
+      b.classList.add('wrong');
+    }
   });
+
+  if (correctIsChosen && correctBtn) spawnConfetti(correctBtn);
 
   gameHistory.push({
     name: q.correct.name,
